@@ -58,6 +58,8 @@ namespace Jatech.NUnit
         /// </summary>
         private static readonly List<string> HelpParameters = new List<string>() { "?", "/?", "help" };
 
+        private static StringBuilder failedList = new StringBuilder();
+
         #endregion
 
         #region Main
@@ -118,6 +120,7 @@ namespace Jatech.NUnit
 
                 // Save HTML to the output file
                 File.WriteAllText(output, html.ToString());
+                File.WriteAllText("failed.txt", failedList.ToString());
             }
         }
 
@@ -526,6 +529,9 @@ namespace Jatech.NUnit
                 {
                     html.AppendLine(string.Format("<div><strong>Message:</strong> {0}</div>", testCase.Element("failure").Element("message").Value));
                     html.AppendLine(string.Format("<div><strong>Stack Trace:</strong> <pre>{0}</pre></div>", testCase.Element("failure").Element("stack-trace") == null ? "N/A" : testCase.Element("failure").Element("stack-trace").Value));
+
+                    failedList.Append(testCase.Attribute("fullname").Value);
+                    failedList.Append(',');
                 }
 
                 html.AppendLine("</div>");
