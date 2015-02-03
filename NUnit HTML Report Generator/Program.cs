@@ -68,7 +68,7 @@ namespace Jatech.NUnit
         /// Main entry-point for this application.
         /// </summary>
         /// <param name="args">Array of command-line argument strings.</param>
-        static void Main(string[] args)
+        public static void Main(string[] args)
         {
             StringBuilder html = new StringBuilder();
             bool ok = false;
