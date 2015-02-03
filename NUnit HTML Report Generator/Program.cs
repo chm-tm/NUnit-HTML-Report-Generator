@@ -142,14 +142,9 @@ namespace Jatech.NUnit
 
             if (File.Exists(input))
             {
-                if (!File.Exists(output))
-                {
-                    ok = true;
-                }
-                else
-                {
-                    Console.WriteLine(string.Format("Output file '{0}' already exists", output));
-                }
+                ok = true;
+                if (File.Exists(output))
+                    File.Delete(output);
             }
             else
             {
