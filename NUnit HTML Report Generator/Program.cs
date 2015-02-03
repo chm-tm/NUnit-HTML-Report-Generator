@@ -26,6 +26,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -177,22 +178,17 @@ namespace Jatech.NUnit
             // Load summary values
             string testName = doc.Attribute("name").Value;
             int testTests = int.Parse(!string.IsNullOrEmpty(doc.Attribute("total").Value) ? doc.Attribute("total").Value : "0");
-            int testErrors = int.Parse(!string.IsNullOrEmpty(doc.Attribute("errors").Value) ? doc.Attribute("errors").Value : "0");
-            int testFailures = int.Parse(!string.IsNullOrEmpty(doc.Attribute("failures").Value) ? doc.Attribute("failures").Value : "0");
-            int testNotRun = int.Parse(!string.IsNullOrEmpty(doc.Attribute("not-run").Value) ? doc.Attribute("not-run").Value : "0");
+            int testPassed = int.Parse(!string.IsNullOrEmpty(doc.Attribute("passed").Value) ? doc.Attribute("passed").Value : "0");
+            int testFailures = int.Parse(!string.IsNullOrEmpty(doc.Attribute("failed").Value) ? doc.Attribute("failed").Value : "0");
             int testInconclusive = int.Parse(!string.IsNullOrEmpty(doc.Attribute("inconclusive").Value) ? doc.Attribute("inconclusive").Value : "0");
-            int testIgnored = int.Parse(!string.IsNullOrEmpty(doc.Attribute("ignored").Value) ? doc.Attribute("ignored").Value : "0");
             int testSkipped = int.Parse(!string.IsNullOrEmpty(doc.Attribute("skipped").Value) ? doc.Attribute("skipped").Value : "0");
-            int testInvalid = int.Parse(!string.IsNullOrEmpty(doc.Attribute("invalid").Value) ? doc.Attribute("invalid").Value : "0");
-            DateTime testDate = DateTime.Parse(string.Format("{0} {1}", doc.Attribute("date").Value, doc.Attribute("time").Value));
-            string testPlatform = doc.Element("environment").Attribute("platform").Value;
 
             // Calculate the success rate
             decimal percentage = 0;
             if (testTests > 0)
             {
-                int failures = testErrors + testFailures;
-                percentage = decimal.Round(decimal.Divide(failures, testTests) * 100, 1);
+                int failures = testFailures;
+                percentage = decimal.Round(decimal.Divide(failures, testTests - testSkipped) * 100, 1);
             }
 
             // Container
@@ -201,21 +197,15 @@ namespace Jatech.NUnit
             // Summary panel
             html.AppendLine("<div class=\"row\">");
             html.AppendLine("<div class=\"col-md-12\">");
-            html.AppendLine("<div class=\"panel panel-default\">");
+            html.AppendLine("<div class=\"panel panel-info\">");
             html.AppendLine(string.Format("<div class=\"panel-heading\">Summary - <small>{0}</small></div>", testName));
             html.AppendLine("<div class=\"panel-body\">");
 
             html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Tests</div><div class=\"val ignore-val\">{0}</div></div>", testTests));
-            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Failures</div><div class=\"val {1}\">{0}</div></div>", testFailures, testFailures > 0 ? "text-danger" : string.Empty));
-            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Errors</div><div class=\"val {1}\">{0}</div></div>", testErrors, testErrors > 0 ? "text-danger" : string.Empty));
-            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Not Run</div><div class=\"val {1}\">{0}</div></div>", testNotRun, testNotRun > 0 ? "text-danger" : string.Empty));
+            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Passed</div><div class=\"val {1}\">{0}</div></div>", testPassed, testFailures > 0 ? "text-success" : string.Empty));
+            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Failed</div><div class=\"val {1}\">{0}</div></div>", testFailures, testFailures > 0 ? "text-danger" : string.Empty));
             html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Inconclusive</div><div class=\"val {1}\">{0}</div></div>", testInconclusive, testInconclusive > 0 ? "text-danger" : string.Empty));
-            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Ignored</div><div class=\"val {1}\">{0}</div></div>", testIgnored, testIgnored > 0 ? "text-danger" : string.Empty));
-            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Skipped</div><div class=\"val {1}\">{0}</div></div>", testSkipped, testSkipped > 0 ? "text-danger" : string.Empty));
-            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Invalid</div><div class=\"val {1}\">{0}</div></div>", testInvalid, testInvalid > 0 ? "text-danger" : string.Empty));
-            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Date</div><div class=\"val\">{0}</div></div>", testDate.ToString("d MMM")));
-            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Time</div><div class=\"val\">{0}</div></div>", testDate.ToShortTimeString()));
-            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Platform</div><div class=\"val\">{0}</div></div>", testPlatform));
+            html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Skipped</div><div class=\"val {1}\">{0}</div></div>", testSkipped, testSkipped > 0 ? "text-warning" : string.Empty));
             html.AppendLine(string.Format("<div class=\"col-md-2 col-sm-4 col-xs-6 text-center\"><div class=\"stat\">Success Rate</div><div class=\"val\">{0}%</div></div>", 100 - percentage));
 
             // End summary panel
@@ -251,10 +241,23 @@ namespace Jatech.NUnit
             {
                 // Load fixture details
                 fixtureName = fixture.Attribute("name").Value;
-                fixtureNamespace = GetElementNamespace(fixture);
-                fixtureTime = fixture.Attribute("time") != null ? fixture.Attribute("time").Value : string.Empty;
+                fixtureNamespace = fixture.Attribute("fullname").Value;
+                fixtureNamespace = fixtureNamespace.Substring(0, fixtureNamespace.Length - fixtureName.Length - 1);
+                fixtureTime = fixture.Attribute("duration") != null ? fixture.Attribute("duration").Value : string.Empty;
+                float fixtureTimeFloat = float.Parse(fixtureTime, NumberStyles.Float, CultureInfo.InvariantCulture);
+                fixtureTime = fixtureTimeFloat.ToString(CultureInfo.InvariantCulture) + "s";
+
                 fixtureResult = fixture.Attribute("result").Value;
-                fixtureReason = fixture.Element("reason") != null ? fixture.Element("reason").Element("message").Value : string.Empty;
+                if (fixtureResult.ToLower() == "failed" && fixture.Attribute("label") != null)
+                    fixtureResult = fixture.Attribute("label").Value;
+                fixtureReason = fixture.Element("properties") != null ? fixture.Element("properties").Element("property").Attribute("value").Value : string.Empty;
+                if (!string.IsNullOrEmpty(fixtureReason))
+                    fixtureTime = string.Empty;
+
+                var fixturePassed = fixture.Attribute("passed").Value;
+                var fixtureFailed = fixture.Attribute("failed").Value;
+                //var fixtureInconclusive = fixture.Attribute("inconclusive").Value;
+                var fixtureSkipped = fixture.Attribute("skipped").Value;
 
                 html.AppendLine("<div class=\"col-md-3\">");
                 html.AppendLine("<div class=\"panel ");
@@ -262,13 +265,13 @@ namespace Jatech.NUnit
                 // Colour code panels
                 switch (fixtureResult.ToLower())
                 {
-                    case "success":
+                    case "passed":
                         html.Append("panel-success");
                         break;
                     case "ignored":
-                        html.Append("panel-info");
+                        html.Append("panel-warning");
                         break;
-                    case "failure":
+                    case "failed":
                     case "error":
                         html.Append("panel-danger");
                         break;
@@ -297,37 +300,39 @@ namespace Jatech.NUnit
 
                 html.AppendLine("<div class=\"text-center\" style=\"font-size: 1.5em;\">");
 
-                // Add a colour coded link to the modal dialog
-                switch (fixtureResult.ToLower())
-                {
-                    case "success":
-                        html.AppendLine(string.Format("<a href=\"#{0}\" role=\"button\" data-toggle=\"modal\" class=\"text-success no-underline\">", modalId));
-                        html.AppendLine("<span class=\"glyphicon glyphicon-ok-sign\"></span>");
-                        html.AppendLine("<span class=\"test-result\">Success</span>");
-                        html.AppendLine("</a>");
-                        break;
-                    case "ignored":
-                        html.AppendLine(string.Format("<a href=\"#{0}\" role=\"button\" data-toggle=\"modal\" class=\"text-info no-underline\">", modalId));
-                        html.AppendLine("<span class=\"glyphicon glyphicon-info-sign\"></span>");
-                        html.AppendLine("<span class=\"test-result\">Ignored</span>");
-                        html.AppendLine("</a>");
-                        break;
-                    case "notrunnable":
-                        html.AppendLine(string.Format("<a href=\"#{0}\" role=\"button\" data-toggle=\"modal\" class=\"text-default no-underline\">", modalId));
-                        html.AppendLine("<span class=\"glyphicon glyphicon-remove-sign\"></span>");
-                        html.AppendLine("<span class=\"test-result\">Not Runnable</span>");
-                        html.AppendLine("</a>");
-                        break;
-                    case "failure":
-                    case "error":
-                        html.AppendLine(string.Format("<a href=\"#{0}\" role=\"button\" data-toggle=\"modal\" class=\"text-danger no-underline\">", modalId));
-                        html.AppendLine("<span class=\"glyphicon glyphicon-exclamation-sign\"></span>");
-                        html.AppendLine("<span class=\"test-result\">Failed</span>");
-                        html.AppendLine("</a>");
-                        break;
-                    default:
-                        break;
-                }
+
+                html.AppendLine("<div style=\"float: left; margin: 0px 30px;\">");
+                html.AppendLine(string.Format("<a href=\"#{0}\" role=\"button\" data-toggle=\"modal\" class=\"text-success no-underline\">", modalId));
+                html.AppendLine(string.Format("<span style=\"font-weight: bold;\">{0}</span>", fixturePassed));
+                html.AppendLine("<span class=\"glyphicon glyphicon-ok-sign\"></span>");
+                html.AppendLine("<span class=\"test-result\">Passed</span>");
+                html.AppendLine("</a>");
+                html.AppendLine("</div>");
+
+                html.AppendLine("<div style=\"float: left; margin: 0px 30px;\">");
+                html.AppendLine(string.Format("<a href=\"#{0}\" role=\"button\" data-toggle=\"modal\" class=\"text-warning no-underline\">", modalId));
+                html.AppendLine(string.Format("<span style=\"font-weight: bold;\">{0}</span>", fixtureSkipped));
+                html.AppendLine("<span class=\"glyphicon glyphicon-question-sign\"></span>");
+                html.AppendLine("<span class=\"test-result\">Ignored</span>");
+                html.AppendLine("</a>");
+                html.AppendLine("</div>");
+
+                /*
+                html.AppendLine("<div style=\"float: left; margin: 0px 30px;\">");
+                html.AppendLine(string.Format("<a href=\"#{0}\" role=\"button\" data-toggle=\"modal\" class=\"text-default no-underline\">", modalId));
+                html.AppendLine("<span class=\"glyphicon glyphicon-remove-sign\"></span>");
+                html.AppendLine("<span class=\"test-result\">Invalid</span>");
+                html.AppendLine("</a>");
+                html.AppendLine("</div>");
+                */
+
+                html.AppendLine("<div style=\"float: left; margin: 0px 30px;\">");
+                html.AppendLine(string.Format("<a href=\"#{0}\" role=\"button\" data-toggle=\"modal\" class=\"text-danger no-underline\">", modalId));
+                html.AppendLine(string.Format("<span style=\"font-weight: bold;\">{0}</span>", fixtureFailed));
+                html.AppendLine("<span class=\"glyphicon glyphicon-remove-sign\"></span>");
+                html.AppendLine("<span class=\"test-result\">Failed</span>");
+                html.AppendLine("</a>");
+                html.AppendLine("</div>");
 
                 html.AppendLine("</div>");
 
@@ -393,6 +398,8 @@ namespace Jatech.NUnit
                 // Get test case properties
                 name = testCase.Attribute("name").Value;
                 result = testCase.Attribute("result").Value;
+                if (result.ToLower() == "failed" && testCase.Attribute("label") != null)
+                    result = testCase.Attribute("label").Value;
 
                 // Remove namespace if in name
                 name = name.Substring(name.LastIndexOf('.') + 1, name.Length - name.LastIndexOf('.') - 1);
@@ -402,13 +409,13 @@ namespace Jatech.NUnit
 
                 switch (result.ToLower())
                 {
-                    case "success":
+                    case "passed":
                         html.Append("panel-success");
                         break;
                     case "ignored":
-                        html.Append("panel-info");
+                        html.Append("panel-warning");
                         break;
-                    case "failure":
+                    case "failed":
                     case "error":
                         html.Append("panel-danger");
                         break;
@@ -431,7 +438,7 @@ namespace Jatech.NUnit
                 if (testCase.Elements("failure").Count() == 1)
                 {
                     html.AppendLine(string.Format("<div><strong>Message:</strong> {0}</div>", testCase.Element("failure").Element("message").Value));
-                    html.AppendLine(string.Format("<div><strong>Stack Trace:</strong> <pre>{0}</pre></div>", testCase.Element("failure").Element("stack-trace").Value));
+                    html.AppendLine(string.Format("<div><strong>Stack Trace:</strong> <pre>{0}</pre></div>", testCase.Element("failure").Element("stack-trace") == null ? "N/A" : testCase.Element("failure").Element("stack-trace").Value));
                 }
 
                 html.AppendLine("</div>");
@@ -482,6 +489,8 @@ namespace Jatech.NUnit
                 // Get properties
                 name = testCase.Attribute("name").Value;
                 result = testCase.Attribute("result").Value;
+                if (result.ToLower() == "failed" && testCase.Attribute("label") != null)
+                    result = testCase.Attribute("label").Value;
 
                 // Remove namespace if included
                 name = name.Substring(name.LastIndexOf('.') + 1, name.Length - name.LastIndexOf('.') - 1);
@@ -490,13 +499,14 @@ namespace Jatech.NUnit
 
                 switch (result.ToLower())
                 {
-                    case "success":
+                    case "passed":
                         html.Append("panel-success");
                         break;
+                    case "skipped":
                     case "ignored":
-                        html.Append("panel-info");
+                        html.Append("panel-warning");
                         break;
-                    case "failure":
+                    case "failed":
                     case "error":
                         html.Append("panel-danger");
                         break;
@@ -520,7 +530,7 @@ namespace Jatech.NUnit
                 if (testCase.Elements("failure").Count() == 1)
                 {
                     html.AppendLine(string.Format("<div><strong>Message:</strong> {0}</div>", testCase.Element("failure").Element("message").Value));
-                    html.AppendLine(string.Format("<div><strong>Stack Trace:</strong> <pre>{0}</pre></div>", testCase.Element("failure").Element("stack-trace").Value));
+                    html.AppendLine(string.Format("<div><strong>Stack Trace:</strong> <pre>{0}</pre></div>", testCase.Element("failure").Element("stack-trace") == null ? "N/A" : testCase.Element("failure").Element("stack-trace").Value));
                 }
 
                 html.AppendLine("</div>");
@@ -559,17 +569,17 @@ namespace Jatech.NUnit
             header.AppendLine("    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\" />"); // Set for mobile
             header.AppendLine(string.Format("    <title>{0}</title>", title));
 
-            // Add custom scripts
-            header.AppendLine("    <script>");
-
+            // Include Bootstrap CSS in the page
+            header.AppendLine("<link rel=\"stylesheet\" type=\"text/css\" href=\"http://cdn.jsdelivr.net/bootstrap/3.2.0/css/bootstrap.min.css\" />");
+            header.AppendLine("<link rel=\"stylesheet\" type=\"text/css\" href=\"http://maxcdn.bootstrapcdn.com/bootswatch/3.2.0/superhero/bootstrap.min.css\" />");
+        
             // Include jQuery in the page
-            header.AppendLine(Properties.Resources.jQuery);
-            header.AppendLine("    </script>");
-            header.AppendLine("    <script>");
+            header.AppendLine("<script type=\"text/javascript\" src=\"http://code.jquery.com/jquery-2.1.1.min.js\"></script>");
 
             // Include Bootstrap in the page
-            header.AppendLine(Properties.Resources.BootstrapJS);
-            header.AppendLine("    </script>");
+            header.AppendLine("<script type=\"text/javascript\" src=\"http://cdn.jsdelivr.net/bootstrap/3.2.0/js/bootstrap.min.js\"></script>");
+
+            // Add custom scripts
             header.AppendLine("    <script type=\"text/javascript\">");
             header.AppendLine("    $(document).ready(function() { ");
             header.AppendLine("        $('[data-toggle=\"tooltip\"]').tooltip({'placement': 'bottom'});");
@@ -579,8 +589,6 @@ namespace Jatech.NUnit
             // Add custom styles
             header.AppendLine("    <style>");
 
-            // Include Bootstrap CSS in the page
-            header.AppendLine(Properties.Resources.BootstrapCSS);
             header.AppendLine("    .page { margin: 15px 0; }");
             header.AppendLine("    .no-bottom-margin { margin-bottom: 0; }");
             header.AppendLine("    .printed-test-result { margin-top: 15px; }");
@@ -588,12 +596,12 @@ namespace Jatech.NUnit
             header.AppendLine("    .scroller { overflow: scroll; }");
             header.AppendLine("    @media print { .panel-collapse { display: block !important; } }");
             header.AppendLine("    .val { font-size: 38px; font-weight: bold; margin-top: -10px; }");
-            header.AppendLine("    .stat { font-weight: 800; text-transform: uppercase; font-size: 0.85em; color: #6F6F6F; }");
+            header.AppendLine("    .stat { font-weight: 800; text-transform: uppercase; font-size: 0.85em; color: #BBBBBB; }");
             header.AppendLine("    .test-result { display: block; }");
             header.AppendLine("    .no-underline:hover { text-decoration: none; }");
             header.AppendLine("    .text-default { color: #555; }");
             header.AppendLine("    .text-default:hover { color: #000; }");
-            header.AppendLine("    .info { color: #888; }");
+            header.AppendLine("    .info { color: #DDDDDD; }");
             header.AppendLine("    </style>");
             header.AppendLine("  </head>");
             header.AppendLine("  <body>");
