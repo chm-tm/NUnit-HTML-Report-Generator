@@ -597,6 +597,7 @@ namespace Jatech.NUnit
             header.AppendLine("    .text-default { color: #555; }");
             header.AppendLine("    .text-default:hover { color: #000; }");
             header.AppendLine("    .info { color: #DDDDDD; }");
+            header.AppendLine("    .modal-dialog { width: 80%; }");
             header.AppendLine("    </style>");
             header.AppendLine("  </head>");
             header.AppendLine("  <body>");

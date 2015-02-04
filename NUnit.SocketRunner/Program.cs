@@ -20,16 +20,17 @@ namespace NUnit.SocketRunner
             Console.Write("IP Address: ");
             var ip = Console.ReadLine();
 
+            string line;
             try
             {
-                client.Connect(ip, 4711);
+                client.Connect(ip, Port);
 
                 Console.WriteLine("Connected");
 
                 bool appendPassFile = false;
 
                 Console.WriteLine("Specify tests to run? [y] [n] [f]");
-                var line = Console.ReadLine();
+                line = Console.ReadLine();
 
                 if (line.StartsWith("y")) // Yes
                 {
@@ -93,7 +94,16 @@ namespace NUnit.SocketRunner
                         else if (line.StartsWith("Skipped "))
                             Console.Write(">");
 
-                        line = ReadLine(client);
+                        var newLine = ReadLine(client);
+                        if (newLine == null)
+                        {
+                            if (Debugger.IsAttached)
+                                Debugger.Break();
+                            else
+                                throw new Exception("Connection failed. Last message: " + line);
+                        }
+
+                        line = newLine;
                     }
                 }
 
