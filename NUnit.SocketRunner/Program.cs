@@ -26,6 +26,8 @@ namespace NUnit.SocketRunner
 
                 Console.WriteLine("Connected");
 
+                bool appendPassFile = false;
+
                 Console.WriteLine("Specify tests to run? [y] [n] [f]");
                 var line = Console.ReadLine();
 
@@ -35,19 +37,19 @@ namespace NUnit.SocketRunner
                     Console.WriteLine("Enter tests to run, comma separated with full name in a single line:");
                     var tests = Console.ReadLine();
                     WriteLine(client, tests);
+                    appendPassFile = true;
                 }
                 else if (line.StartsWith("f")) // File
                 {
                     WriteLine(client, "y");
                     WriteLine(client, File.ReadAllText("failed.txt"));
+                    appendPassFile = true;
                 }
                 else // No
                     WriteLine(client, line);
 
                 Console.WriteLine("Specify tests to exclude? [y] [n] [f]");
                 line = Console.ReadLine();
-
-                bool passFile = false;
 
                 if (line.StartsWith("y")) // Yes
                 {
@@ -60,7 +62,7 @@ namespace NUnit.SocketRunner
                 {
                     WriteLine(client, "y");
                     WriteLine(client, File.ReadAllText("passed.txt"));
-                    passFile = true;
+                    appendPassFile = true;
                 }
                 else // No
                     WriteLine(client, line);
@@ -68,7 +70,7 @@ namespace NUnit.SocketRunner
                 line = "Running tests...";
 
                 using (var fs = new FileStream("failed.txt", FileMode.Create))
-                using (var ps = new FileStream("passed.txt", passFile ? FileMode.Append : FileMode.Create))
+                using (var ps = new FileStream("passed.txt", appendPassFile ? FileMode.Append : FileMode.Create))
                 using (var fw = new StreamWriter(fs))
                 using (var pw = new StreamWriter(ps))
                 {
