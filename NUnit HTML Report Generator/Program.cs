@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
@@ -486,6 +487,9 @@ namespace Jatech.NUnit
                 result = testCase.Attribute("result").Value;
                 if (result.ToLower() == "failed" && testCase.Attribute("label") != null)
                     result = testCase.Attribute("label").Value;
+                var testTime = testCase.Attribute("duration") != null ? testCase.Attribute("duration").Value : string.Empty;
+                float fixtureTimeFloat = float.Parse(testTime, NumberStyles.Float, CultureInfo.InvariantCulture);
+                testTime = fixtureTimeFloat.ToString(CultureInfo.InvariantCulture) + "s";
 
                 // Remove namespace if included
                 name = name.Substring(name.LastIndexOf('.') + 1, name.Length - name.LastIndexOf('.') - 1);
@@ -514,7 +518,7 @@ namespace Jatech.NUnit
 
                 html.AppendLine("<div class=\"panel-heading\">");
                 html.AppendLine("<h4 class=\"panel-title\">");
-                html.AppendLine(string.Format("<a data-toggle=\"collapse\" data-parent=\"#{1}\" href=\"#{1}-accordion-{2}\">{0}</a>", name, modalId, i));
+                html.AppendLine(string.Format("<a data-toggle=\"collapse\" data-parent=\"#{1}\" href=\"#{1}-accordion-{2}\">{0}<small class=\"pull-right\">{3}</small></a>", name, modalId, i, testTime));
                 html.AppendLine("</h4>");
                 html.AppendLine("</div>");
                 html.AppendLine(string.Format("<div id=\"{0}-accordion-{1}\" class=\"panel-collapse collapse\">", modalId, i++));
@@ -524,8 +528,8 @@ namespace Jatech.NUnit
                 // Add failure messages if available
                 if (testCase.Elements("failure").Count() == 1)
                 {
-                    html.AppendLine(string.Format("<div><strong>Message:</strong> {0}</div>", testCase.Element("failure").Element("message").Value));
-                    html.AppendLine(string.Format("<div><strong>Stack Trace:</strong> <pre>{0}</pre></div>", testCase.Element("failure").Element("stack-trace") == null ? "N/A" : testCase.Element("failure").Element("stack-trace").Value));
+                    html.AppendLine(string.Format("<div><strong>Message:</strong> {0}</div>", WebUtility.HtmlEncode(testCase.Element("failure").Element("message").Value));
+                    html.AppendLine(string.Format("<div><strong>Stack Trace:</strong> <pre>{0}</pre></div>", testCase.Element("failure").Element("stack-trace") == null ? "N/A" : WebUtility.HtmlEncode(testCase.Element("failure").Element("stack-trace").Value)));
                 }
 
                 html.AppendLine("</div>");
