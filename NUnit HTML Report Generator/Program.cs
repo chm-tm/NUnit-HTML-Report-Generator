@@ -556,7 +556,7 @@ namespace Jatech.NUnit
                 // Add failure messages if available
                 if (testCase.Elements("failure").Count() == 1)
                 {
-                    html.AppendLine(string.Format("<div><strong>Message:</strong> {0}</div>", WebUtility.HtmlEncode(testCase.Element("failure").Element("message").Value)));
+                    html.AppendLine(string.Format("<div><strong>Message:</strong> <pre>{0}</pre></div>", WebUtility.HtmlEncode(testCase.Element("failure").Element("message").Value)));
                     html.AppendLine(string.Format("<div><strong>Stack Trace:</strong> <pre>{0}</pre></div>", testCase.Element("failure").Element("stack-trace") == null ? "N/A" : WebUtility.HtmlEncode(testCase.Element("failure").Element("stack-trace").Value)));
                 }
 
