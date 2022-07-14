@@ -166,10 +166,10 @@ namespace Jatech.NUnit
         /// <param name="filePath">The path to the file</param>
         private static void CreateFolder(string folderPath)
         {
-            string fullPath = Path.GetFullPath(folderPath);
-            if (!Directory.Exists(folderPath))
+            string fullPath = Path.GetDirectoryName(Path.GetFullPath(folderPath));
+            if (!Directory.Exists(fullPath))
             {
-                Directory.CreateDirectory(folderPath);
+                Directory.CreateDirectory(fullPath);
             }
         }
 
