@@ -52,12 +52,12 @@ namespace Jatech.NUnit
         /// <summary>
         /// Regular expression for acceptable characters in html id.
         /// </summary>
-        private static readonly Regex Regex = new Regex("[^a-zA-Z0-9 -]");
+        private static readonly Regex Regex = new("[^a-zA-Z0-9 -]");
 
         /// <summary>
         /// Switches for displaying the basic help when executed.
         /// </summary>
-        private static readonly List<string> HelpParameters = new List<string>() { "?", "/?", "help" };
+        private static readonly List<string> HelpParameters = new() { "?", "/?", "help" };
 
         #endregion
 
@@ -69,7 +69,7 @@ namespace Jatech.NUnit
         /// <param name="args">Array of command-line argument strings.</param>
         public static void Main(string[] args)
         {
-            StringBuilder html = new StringBuilder();
+            StringBuilder html = new();
             bool ok = false;
             string input = string.Empty, output = string.Empty;
 
@@ -186,7 +186,7 @@ namespace Jatech.NUnit
         /// </returns>
         private static string ProcessFile(string file)
         {
-            StringBuilder html = new StringBuilder();
+            StringBuilder html = new();
             XElement doc = XElement.Load(file);
 
             // Load summary values
@@ -246,7 +246,7 @@ namespace Jatech.NUnit
         /// </returns>
         private static string ProcessFixtures(IEnumerable<XElement> fixtures)
         {
-            StringBuilder html = new StringBuilder();
+            StringBuilder html = new();
             int index = 0;
             string fixtureName, fixtureNamespace, fixtureTime, fixtureResult, fixtureReason;
 
@@ -256,7 +256,7 @@ namespace Jatech.NUnit
                 // Load fixture details
                 fixtureName = fixture.Attribute("name").Value;
                 fixtureNamespace = fixture.Attribute("fullname").Value;
-                fixtureNamespace = fixtureNamespace.Substring(0, fixtureNamespace.Length - fixtureName.Length - 1);
+                fixtureNamespace = fixtureNamespace[..^(fixtureName.Length + 1)];
                 fixtureTime = fixture.Attribute("duration") != null ? fixture.Attribute("duration").Value : string.Empty;
                 float fixtureTimeFloat = float.Parse(fixtureTime, NumberStyles.Float, CultureInfo.InvariantCulture);
                 fixtureTime = fixtureTimeFloat.ToString(CultureInfo.InvariantCulture) + "s";
@@ -364,23 +364,6 @@ namespace Jatech.NUnit
 
             return html.ToString();
         }
-
-        /// <summary>
-        /// Gets an elements namespace.
-        /// </summary>
-        /// <param name="element">The element.</param>
-        /// <returns>
-        /// The element namespace.
-        /// </returns>
-        private static string GetElementNamespace(XElement element)
-        {
-            // Move up the tree to get the parent elements
-            var namespaces = element.Ancestors("test-suite").Where(x => x.Attribute("type").Value.ToLower() == "namespace");
-
-            // Get the namespace
-            return string.Join(".", namespaces.Select(x => x.Attribute("name").Value));
-        }
-
         #endregion
 
         #region HTML Helpers
@@ -395,7 +378,7 @@ namespace Jatech.NUnit
         /// </returns>
         private static string GeneratePrintableView(XElement fixture, string warningMessage)
         {
-            StringBuilder html = new StringBuilder();
+            StringBuilder html = new();
 
             string name, result;
             html.AppendLine("<div class=\"visible-print printed-test-result\">");
@@ -476,7 +459,7 @@ namespace Jatech.NUnit
         /// </returns>
         private static string GenerateFixtureModal(XElement fixture, string modalId, string title, string warningMessage)
         {
-            StringBuilder html = new StringBuilder();
+            StringBuilder html = new();
 
             html.AppendLine(string.Format("<div class=\"modal fade\" id=\"{0}\" tabindex=\"-1\" role=\"dialog\" aria-labelledby=\"myModalLabel\" aria-hidden=\"true\">", modalId));
             html.AppendLine("<div class=\"modal-dialog\">");
@@ -513,7 +496,7 @@ namespace Jatech.NUnit
                 int parenthesisPosition = name.LastIndexOf('(');
                 if (parenthesisPosition >= 0)
                 {
-                    parenthesisPosition = parenthesisPosition - 1;
+                    parenthesisPosition--;
                 }
                 else
                 {
@@ -588,7 +571,7 @@ namespace Jatech.NUnit
         /// </returns>
         private static string GetHTML5Header(string title)
         {
-            StringBuilder header = new StringBuilder();
+            StringBuilder header = new();
             header.AppendLine("<!doctype html>");
             header.AppendLine("<html lang=\"en\">");
             header.AppendLine("  <head>");
@@ -645,7 +628,7 @@ namespace Jatech.NUnit
         /// </returns>
         private static string GetHTML5Footer()
         {
-            StringBuilder footer = new StringBuilder();
+            StringBuilder footer = new();
             footer.AppendLine("  </body>");
             footer.AppendLine("</html>");
 
