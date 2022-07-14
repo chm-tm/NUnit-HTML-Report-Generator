@@ -1,21 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace NUnit.SocketRunner
-{
+namespace NUnit.SocketRunner {
     class Program
     {
         private const int Port = 4711;
 
-        static void Main(string[] args)
+        static void Main()
         {
-            Socket client = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+            Socket client = new(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
             Console.Write("IP Address: ");
             var ip = Console.ReadLine();
@@ -82,13 +78,13 @@ namespace NUnit.SocketRunner
                         if (line.StartsWith("Passed "))
                         {
                             Console.Write(".");
-                            pw.Write(line.Substring("Passed ".Length) + ",");
+                            pw.Write(string.Concat(line.AsSpan("Passed ".Length), ","));
                             pw.Flush();
                         }
                         else if (line.StartsWith("Failed "))
                         {
                             Console.Write("X");
-                            fw.Write(line.Substring("Failed ".Length) + ",");
+                            fw.Write(string.Concat(line.AsSpan("Failed ".Length), ","));
                             fw.Flush();
                         }
                         else if (line.StartsWith("Skipped "))
@@ -125,20 +121,16 @@ namespace NUnit.SocketRunner
 
         private static string ReadLine(Socket handler)
         {
-            using (var stream = new NetworkStream(handler))
-            using (var reader = new StreamReader(stream))
-            {
-                return reader.ReadLine();
-            }
+            using var stream = new NetworkStream(handler);
+            using var reader = new StreamReader(stream);
+            return reader.ReadLine();
         }
 
         private static void WriteLine(Socket handler, string text)
         {
-            using (var stream = new NetworkStream(handler))
-            using (var writer = new StreamWriter(stream))
-            {
-                writer.WriteLine(text);
-            }
+            using var stream = new NetworkStream(handler);
+            using var writer = new StreamWriter(stream);
+            writer.WriteLine(text);
         }
     }
 }
